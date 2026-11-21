@@ -1,8 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
-const notImplemented_1 = require("../utils/notImplemented");
+const dashboard_controller_1 = require("../controllers/dashboard.controller");
+const auth_1 = require("../middleware/auth");
 const router = (0, express_1.Router)();
-router.get('/stats', notImplemented_1.notImplemented);
-router.get('/activity', notImplemented_1.notImplemented);
+router.use(auth_1.requireAuth);
+router.get('/stats', dashboard_controller_1.stats);
+router.get('/activity', dashboard_controller_1.activity);
 exports.default = router;

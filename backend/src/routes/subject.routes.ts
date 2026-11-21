@@ -1,13 +1,15 @@
 import { Router } from 'express'
+import { createSubject, deleteSubject, listSubjects, updateSubject } from '../controllers/subject.controller'
+import { requireAuth } from '../middleware/auth'
 import { validate } from '../middleware/validate'
-import { notImplemented } from '../utils/notImplemented'
 import { subjectSchema } from '../validators/subject'
 
 const router = Router()
+router.use(requireAuth)
 
-router.get('/', notImplemented)
-router.post('/', validate(subjectSchema), notImplemented)
-router.put('/:id', validate(subjectSchema), notImplemented)
-router.delete('/:id', notImplemented)
+router.get('/', listSubjects)
+router.post('/', validate(subjectSchema), createSubject)
+router.put('/:id', validate(subjectSchema), updateSubject)
+router.delete('/:id', deleteSubject)
 
 export default router

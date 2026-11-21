@@ -4,17 +4,24 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
+const mongoose_1 = __importDefault(require("mongoose"));
 const auth_routes_1 = __importDefault(require("./auth.routes"));
 const dashboard_routes_1 = __importDefault(require("./dashboard.routes"));
 const subject_routes_1 = __importDefault(require("./subject.routes"));
 const task_routes_1 = __importDefault(require("./task.routes"));
 const user_routes_1 = __importDefault(require("./user.routes"));
 const router = (0, express_1.Router)();
-// Used by Docker and monitoring tools to check that the API is alive
+// Used by Docker and monitoring tools: 200 only when the database is reachable too
 router.get('/health', (_req, res) => {
-    res.json({
-        success: true,
-        data: { status: 'ok', uptime: Math.round(process.uptime()), timestamp: new Date().toISOString() },
+    const dbConnected = mongoose_1.default.connection.readyState === 1;
+    res.status(dbConnected ? 200 : 503).json({
+        success: dbConnected,
+        data: {
+            status: dbConnected ? 'ok' : 'degraded',
+            database: dbConnected ? 'connected' : 'disconnected',
+            uptime: Math.round(process.uptime()),
+            timestamp: new Date().toISOString(),
+        },
     });
 });
 router.use('/auth', auth_routes_1.default);

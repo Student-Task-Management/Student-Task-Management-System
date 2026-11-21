@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import mongoose from 'mongoose'
 import authRoutes from './auth.routes'
 import dashboardRoutes from './dashboard.routes'
 import subjectRoutes from './subject.routes'
@@ -7,11 +8,17 @@ import userRoutes from './user.routes'
 
 const router = Router()
 
-// Used by Docker and monitoring tools to check that the API is alive
+// Used by Docker and monitoring tools: 200 only when the database is reachable too
 router.get('/health', (_req, res) => {
-  res.json({
-    success: true,
-    data: { status: 'ok', uptime: Math.round(process.uptime()), timestamp: new Date().toISOString() },
+  const dbConnected = mongoose.connection.readyState === 1
+  res.status(dbConnected ? 200 : 503).json({
+    success: dbConnected,
+    data: {
+      status: dbConnected ? 'ok' : 'degraded',
+      database: dbConnected ? 'connected' : 'disconnected',
+      uptime: Math.round(process.uptime()),
+      timestamp: new Date().toISOString(),
+    },
   })
 })
 
