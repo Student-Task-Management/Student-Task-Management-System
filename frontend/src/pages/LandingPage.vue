@@ -12,8 +12,8 @@ import AppLogo from '../components/AppLogo.vue'
         <a href="#how" class="hover:text-ink">How it works</a>
       </nav>
       <div class="flex items-center gap-2">
-        <RouterLink to="/app/overview" class="btn-ghost">Log in</RouterLink>
-        <RouterLink to="/app/overview" class="btn-primary">Get Started</RouterLink>
+        <RouterLink to="/login" class="btn-ghost">Log in</RouterLink>
+        <RouterLink to="/register" class="btn-primary">Get Started</RouterLink>
       </div>
     </header>
 
@@ -29,7 +29,7 @@ import AppLogo from '../components/AppLogo.vue'
         and make every study session count.
       </p>
       <div class="mt-9 flex justify-center gap-3">
-        <RouterLink to="/app/overview" class="btn-primary">Get Started <ArrowRight :size="16" /></RouterLink>
+        <RouterLink to="/register" class="btn-primary">Get Started <ArrowRight :size="16" /></RouterLink>
         <a href="#how" class="btn-ghost border border-slate-200 bg-white">See how it works</a>
       </div>
     </main>

@@ -2,6 +2,8 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import type { Subject } from '../types'
 
+export type SubjectInput = Omit<Subject, 'id'>
+
 export const useSubjectStore = defineStore('subjects', () => {
   // Mock data. Phase 5 replaces this with API calls.
   const subjects = ref<Subject[]>([
@@ -16,5 +18,18 @@ export const useSubjectStore = defineStore('subjects', () => {
     return subjects.value.find((s) => s.name === name)?.color ?? '#94a3b8'
   }
 
-  return { subjects, colorOf }
+  function addSubject(input: SubjectInput) {
+    subjects.value.push({ ...input, id: 's' + Date.now() })
+  }
+
+  function updateSubject(id: string, input: SubjectInput) {
+    const s = subjects.value.find((x) => x.id === id)
+    if (s) Object.assign(s, input)
+  }
+
+  function deleteSubject(id: string) {
+    subjects.value = subjects.value.filter((s) => s.id !== id)
+  }
+
+  return { subjects, colorOf, addSubject, updateSubject, deleteSubject }
 })

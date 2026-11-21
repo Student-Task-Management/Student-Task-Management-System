@@ -51,3 +51,33 @@ body {
 .overlay-enter-from, .overlay-leave-to { opacity: 0; }
 .toast-enter-active, .toast-leave-active { transition: all .25s ease; }
 .toast-enter-from, .toast-leave-to { opacity: 0; transform: translateY(8px); }
+
+/* ---------- Dark theme (applied when <html> has the "dark" class) ---------- */
+.dark {
+  color-scheme: dark;
+  --color-canvas: #0b1020;
+  --color-ink: #e5e9f5;
+  --color-muted: #94a3b8;
+  --color-surface: #141a2e;
+  --shadow-soft: 0 1px 2px rgb(0 0 0 / .3), 0 8px 24px rgb(0 0 0 / .35);
+}
+.dark .bg-white { background-color: #141a2e; }
+.dark .bg-slate-50,
+.dark .bg-slate-100,
+.dark .bg-slate-50\/60,
+.dark .hover\:bg-slate-50:hover,
+.dark .hover\:bg-slate-100:hover,
+.dark .hover\:bg-white:hover,
+.dark .btn-ghost:hover { background-color: #1b2340; }
+.dark .border-slate-100,
+.dark .border-slate-200,
+.dark .divide-slate-100 > :not(:last-child) { border-color: #27304d; }
+.dark .bg-canvas\/80 { background-color: rgb(11 16 32 / .8); }
+.dark .bg-brand-50,
+.dark .bg-brand-50\/60,
+.dark .bg-brand-100 { background-color: rgb(99 102 241 / .18); }
+.dark .text-brand-700 { color: #a5b4fc; }
+.dark .field { background-color: #0f1528; }
+.dark .from-brand-50 { --tw-gradient-from: rgb(99 102 241 / .16); }
+.dark .from-brand-50\/60 { --tw-gradient-from: rgb(99 102 241 / .1); }
+.dark .to-white { --tw-gradient-to: #141a2e; }

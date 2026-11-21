@@ -111,9 +111,22 @@ export const useTaskStore = defineStore('tasks', () => {
     setStatus(id, 'Completed')
   }
 
+  // When a subject is renamed, its tasks follow the new name
+  function renameSubject(oldName: string, newName: string) {
+    tasks.value.forEach((t) => {
+      if (t.subject === oldName) t.subject = newName
+    })
+  }
+
+  // When a subject is deleted, its tasks are deleted too
+  function deleteBySubject(name: string) {
+    tasks.value = tasks.value.filter((t) => t.subject !== name)
+  }
+
   return {
     tasks, total, pending, inProgress, completed, completionRate,
     todayTasks, upcoming, recentActivity, weekly,
     addTask, updateTask, deleteTask, setStatus, completeTask,
+    renameSubject, deleteBySubject,
   }
 })
