@@ -10,7 +10,7 @@ export default createRouter({
       redirect: '/app/overview',
       children: [
         { path: 'overview', name: 'overview', component: () => import('../pages/OverviewPage.vue'), meta: { title: 'Overview' } },
-        { path: 'tasks', name: 'tasks', component: () => import('../pages/PlaceholderPage.vue'), meta: { title: 'My Tasks' } },
+        { path: 'tasks', name: 'tasks', component: () => import('../pages/TasksPage.vue'), meta: { title: 'My Tasks' } },
         { path: 'calendar', name: 'calendar', component: () => import('../pages/PlaceholderPage.vue'), meta: { title: 'Calendar' } },
         { path: 'subjects', name: 'subjects', component: () => import('../pages/PlaceholderPage.vue'), meta: { title: 'Subjects' } },
         { path: 'analytics', name: 'analytics', component: () => import('../pages/PlaceholderPage.vue'), meta: { title: 'Analytics' } },

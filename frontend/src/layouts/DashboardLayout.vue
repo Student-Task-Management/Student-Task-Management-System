@@ -2,6 +2,8 @@
 import { ref } from 'vue'
 import AppSidebar from '../components/AppSidebar.vue'
 import AppTopbar from '../components/AppTopbar.vue'
+import TaskFormPanel from '../components/TaskFormPanel.vue'
+import ToastHost from '../components/ToastHost.vue'
 
 const collapsed = ref(false)
 const mobileOpen = ref(false)
@@ -27,5 +29,9 @@ const mobileOpen = ref(false)
         </RouterView>
       </main>
     </div>
+
+    <!-- Shared by every dashboard page -->
+    <TaskFormPanel />
+    <ToastHost />
   </div>
 </template>

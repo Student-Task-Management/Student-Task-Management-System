@@ -12,3 +12,13 @@ export interface Task {
   createdAt: string
   updatedAt: string
 }
+
+// What the form sends when creating or editing a task
+export type TaskInput = Omit<Task, 'id' | 'createdAt' | 'updatedAt'>
+
+export interface Subject {
+  id: string
+  name: string
+  color: string
+  description: string
+}

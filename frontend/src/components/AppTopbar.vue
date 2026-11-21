@@ -3,12 +3,14 @@ import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Menu, Search, Bell, Plus } from '@lucide/vue'
 import { useAuthStore } from '../stores/auth'
+import { useUiStore } from '../stores/ui'
 
 defineEmits<{ openMenu: [] }>()
 
 const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
+const ui = useUiStore()
 const query = ref('')
 const title = computed(() => String(route.meta.title ?? ''))
 
@@ -51,9 +53,7 @@ function search() {
         <span class="hidden h-9 w-9 place-items-center rounded-full bg-brand-100 text-sm font-semibold text-brand-700 sm:grid">
           {{ auth.initials }}
         </span>
-        <RouterLink to="/app/tasks" class="btn-primary">
-          <Plus :size="16" /><span class="hidden sm:inline">Create Task</span>
-        </RouterLink>
+        <button class="btn-primary" @click="ui.openCreate()"><Plus :size="16" /><span class="hidden sm:inline">Create Task</span></button>
       </div>
     </div>
   </header>

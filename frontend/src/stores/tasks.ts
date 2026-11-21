@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
-import type { Priority, Status, Task } from '../types'
+import type { Priority, Status, Task, TaskInput } from '../types'
 import { dateKeyFromOffset } from '../utils/date'
 
 function mock(
@@ -85,16 +85,35 @@ export const useTaskStore = defineStore('tasks', () => {
     }),
   )
 
-  function completeTask(id: string) {
+  function addTask(input: TaskInput) {
+    const now = new Date().toISOString()
+    tasks.value.unshift({ ...input, id: String(Date.now()), createdAt: now, updatedAt: now })
+  }
+
+  function updateTask(id: string, input: TaskInput) {
+    const task = tasks.value.find((t) => t.id === id)
+    if (task) Object.assign(task, input, { updatedAt: new Date().toISOString() })
+  }
+
+  function deleteTask(id: string) {
+    tasks.value = tasks.value.filter((t) => t.id !== id)
+  }
+
+  function setStatus(id: string, status: Status) {
     const task = tasks.value.find((t) => t.id === id)
     if (task) {
-      task.status = 'Completed'
+      task.status = status
       task.updatedAt = new Date().toISOString()
     }
   }
 
+  function completeTask(id: string) {
+    setStatus(id, 'Completed')
+  }
+
   return {
     tasks, total, pending, inProgress, completed, completionRate,
-    todayTasks, upcoming, recentActivity, weekly, completeTask,
+    todayTasks, upcoming, recentActivity, weekly,
+    addTask, updateTask, deleteTask, setStatus, completeTask,
   }
 })

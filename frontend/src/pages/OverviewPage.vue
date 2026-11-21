@@ -6,10 +6,12 @@ import StatusBadge from '../components/StatusBadge.vue'
 import WeeklyChart from '../components/WeeklyChart.vue'
 import { useAuthStore } from '../stores/auth'
 import { useTaskStore } from '../stores/tasks'
+import { useUiStore } from '../stores/ui'
 import { daysUntil, dueLabel, timeAgo } from '../utils/date'
 
 const auth = useAuthStore()
 const store = useTaskStore()
+const ui = useUiStore()
 
 const hour = new Date().getHours()
 const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening'
@@ -28,9 +30,7 @@ const firstName = auth.user.name.split(' ')[0]
         <h2 class="mt-1 text-2xl font-bold tracking-tight">{{ greeting }}, {{ firstName }}!</h2>
         <p class="mt-1 text-sm text-muted">Small steps every day add up. Let's make today count.</p>
       </div>
-      <RouterLink to="/app/tasks" class="btn-primary self-start sm:self-auto">
-        <Plus :size="16" /> Create Task
-      </RouterLink>
+      <button class="btn-primary self-start sm:self-auto" @click="ui.openCreate()"><Plus :size="16" /> Create Task</button>
     </section>
 
     <!-- Stats -->
@@ -103,9 +103,7 @@ const firstName = auth.user.name.split(' ')[0]
               <StatusBadge :status="t.status" />
             </div>
 
-            <RouterLink to="/app/tasks" class="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-muted transition hover:bg-slate-100 hover:text-ink" aria-label="Edit task" title="Edit task">
-              <Pencil :size="16" />
-            </RouterLink>
+            <button class="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-muted transition hover:bg-slate-100 hover:text-ink" aria-label="Edit task" title="Edit task" @click="ui.openEdit(t)"><Pencil :size="16" /></button>
           </li>
         </ul>
 
@@ -113,7 +111,7 @@ const firstName = auth.user.name.split(' ')[0]
           <span class="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-brand-50 text-brand-600"><CircleCheck :size="24" /></span>
           <p class="mt-3 text-sm font-medium">Nothing due today</p>
           <p class="text-xs text-muted">Enjoy the free time or plan ahead.</p>
-          <RouterLink to="/app/tasks" class="btn-primary mt-4"><Plus :size="16" /> Create Task</RouterLink>
+          <button class="btn-primary mt-4" @click="ui.openCreate()"><Plus :size="16" /> Create Task</button>
         </div>
       </section>
 
