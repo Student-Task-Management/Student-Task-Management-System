@@ -81,3 +81,6 @@ body {
 .dark .from-brand-50 { --tw-gradient-from: rgb(99 102 241 / .16); }
 .dark .from-brand-50\/60 { --tw-gradient-from: rgb(99 102 241 / .1); }
 .dark .to-white { --tw-gradient-to: #141a2e; }
+
+/* Smooth scrolling for landing page section links */
+html { scroll-behavior: smooth; }

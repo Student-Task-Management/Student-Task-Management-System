@@ -22,7 +22,7 @@ const router = createRouter({
       ],
     },
   ],
-  scrollBehavior: () => ({ top: 0 }),
+  scrollBehavior: (to) => (to.hash ? { el: to.hash, top: 80 } : { top: 0 }),
 })
 
 // Route guard: dashboard pages need a login, login/register skip if already logged in

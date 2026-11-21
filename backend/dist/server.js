@@ -1,0 +1,17 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const app_1 = __importDefault(require("./app"));
+const env_1 = require("./config/env");
+const server = app_1.default.listen(env_1.env.PORT, () => {
+    console.log(`StudyFlow API running on http://localhost:${env_1.env.PORT} (${env_1.env.NODE_ENV})`);
+});
+// Stop cleanly when Docker or the terminal asks the process to end
+function shutdown(signal) {
+    console.log(`${signal} received, shutting down`);
+    server.close(() => process.exit(0));
+}
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT', () => shutdown('SIGINT'));
