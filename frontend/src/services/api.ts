@@ -7,6 +7,7 @@ export interface SessionUser {
   role?: 'user' | 'admin'
   name: string
   email: string
+  avatar?: string
 }
 
 export interface Session {

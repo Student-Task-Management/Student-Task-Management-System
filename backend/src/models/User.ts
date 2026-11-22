@@ -8,6 +8,7 @@ const userSchema = new Schema(
     password: { type: String, required: true, select: false }, // select:false = hidden unless asked for
     role: { type: String, enum: ['user', 'admin'], default: 'user' },
     disabled: { type: Boolean, default: false },
+    avatar: { type: String, default: '' },
   },
   { timestamps: { createdAt: true, updatedAt: false }, toJSON: jsonOptions },
 )

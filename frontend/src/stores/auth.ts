@@ -87,6 +87,26 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  async function uploadAvatar(file: File) {
+    try {
+      const body = new FormData()
+      body.append('avatar', file)
+      const { data } = await api.post('/users/avatar', body)
+      saveUser(data.data.user)
+    } catch (e) {
+      throw new Error(getErrorMessage(e))
+    }
+  }
+
+  async function removeAvatar() {
+    try {
+      const { data } = await api.delete('/users/avatar')
+      saveUser(data.data.user)
+    } catch (e) {
+      throw new Error(getErrorMessage(e))
+    }
+  }
+
   function logout() {
     useTaskStore().reset()
     useSubjectStore().reset()
@@ -98,6 +118,6 @@ export const useAuthStore = defineStore('auth', () => {
 
   return {
     user, isLoggedIn, isAdmin, initials,
-    login, register, requestPasswordReset, refresh, updateProfile, changePassword, logout,
+    login, register, requestPasswordReset, refresh, updateProfile, changePassword, logout, uploadAvatar, removeAvatar,
   }
 })

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import UserAvatar from './UserAvatar.vue'
 import { useRouter } from 'vue-router'
 import {
   LayoutDashboard, ListChecks, CalendarDays, BookOpen, ChartColumn,
@@ -71,7 +72,7 @@ function logout() {
     <div class="border-t border-slate-100 p-3">
       <div :class="['flex items-center gap-3 rounded-xl p-2', collapsed ? 'lg:flex-col' : '']">
         <span class="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand-100 text-sm font-semibold text-brand-700">
-          {{ auth.initials }}
+          <UserAvatar size="h-full w-full" />
         </span>
         <div :class="['min-w-0 flex-1', collapsed ? 'lg:hidden' : '']">
           <p class="truncate text-sm font-semibold">{{ auth.user.name }}</p>

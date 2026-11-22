@@ -9,6 +9,48 @@ import { useUiStore } from '../stores/ui'
 const auth = useAuthStore()
 const settings = useSettingsStore()
 const ui = useUiStore()
+import { ref as vueRef } from 'vue'
+import UserAvatar from '../components/UserAvatar.vue'
+
+const avatarInput = vueRef<HTMLInputElement | null>(null)
+const avatarBusy = vueRef(false)
+const avatarError = vueRef('')
+
+async function onAvatarPicked(e: Event) {
+  const input = e.target as HTMLInputElement
+  const file = input.files?.[0]
+  input.value = ''
+  if (!file) return
+  avatarError.value = ''
+  if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+    avatarError.value = 'Please choose a JPG, PNG or WebP image.'
+    return
+  }
+  if (file.size > 2 * 1024 * 1024) {
+    avatarError.value = 'Image must be 2 MB or smaller.'
+    return
+  }
+  avatarBusy.value = true
+  try {
+    await auth.uploadAvatar(file)
+  } catch (err) {
+    avatarError.value = err instanceof Error ? err.message : 'Upload failed.'
+  } finally {
+    avatarBusy.value = false
+  }
+}
+
+async function onAvatarRemove() {
+  avatarError.value = ''
+  avatarBusy.value = true
+  try {
+    await auth.removeAvatar()
+  } catch (err) {
+    avatarError.value = err instanceof Error ? err.message : 'Could not remove the photo.'
+  } finally {
+    avatarBusy.value = false
+  }
+}
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 // ---------- Profile ----------
@@ -81,6 +123,23 @@ const toggles = [
     <section class="card p-6">
       <h2 class="font-semibold">Profile</h2>
       <p class="mb-5 text-sm text-muted">Update your name and email address.</p>
+
+      <div class="mb-6 flex items-center gap-4">
+        <div class="h-16 w-16 shrink-0"><UserAvatar size="h-16 w-16" /></div>
+        <div>
+          <input ref="avatarInput" type="file" accept="image/jpeg,image/png,image/webp" class="hidden" @change="onAvatarPicked" />
+          <div class="flex flex-wrap gap-2">
+            <button type="button" class="btn-primary" :disabled="avatarBusy" @click="avatarInput?.click()">
+              {{ avatarBusy ? 'Uploading...' : 'Change photo' }}
+            </button>
+            <button v-if="auth.user.avatar" type="button" class="rounded-xl border border-slate-200 px-3 py-2 text-sm hover:bg-slate-50" :disabled="avatarBusy" @click="onAvatarRemove">
+              Remove
+            </button>
+          </div>
+          <p class="mt-1 text-xs text-muted">JPG, PNG or WebP, up to 2 MB.</p>
+          <p v-if="avatarError" class="mt-1 text-xs text-rose-600">{{ avatarError }}</p>
+        </div>
+      </div>
 
       <form class="space-y-5" novalidate @submit.prevent="saveProfile">
         <div class="grid gap-5 sm:grid-cols-2">

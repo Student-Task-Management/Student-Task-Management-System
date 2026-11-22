@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import UserAvatar from './UserAvatar.vue'
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Menu, Search, Bell, Plus, User, LogOut } from '@lucide/vue'
@@ -141,7 +142,7 @@ async function logout() {
           :aria-expanded="open === 'profile'"
           @click="toggle('profile')"
         >
-          {{ auth.initials }}
+          <UserAvatar size="h-full w-full" />
         </button>
 
         <div v-if="open === 'profile'" class="card absolute right-0 top-12 z-30 w-60 p-2 shadow-lg">
