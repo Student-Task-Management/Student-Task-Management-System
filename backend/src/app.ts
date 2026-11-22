@@ -8,6 +8,7 @@ import routes from './routes'
 import { UPLOAD_DIR } from './middleware/upload'
 
 const app = express()
+app.set('trust proxy', Number(process.env.TRUST_PROXY_HOPS ?? 0)) // proxies in front: nginx, Caddy
 
 app.use(helmet()) // safe HTTP headers
 app.use(cors({ origin: env.CLIENT_URL, credentials: true })) // only our frontend may call the API
