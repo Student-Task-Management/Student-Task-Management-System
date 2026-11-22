@@ -1,35 +1,66 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import type { Subject } from '../types'
-
-export type SubjectInput = Omit<Subject, 'id'>
+import { api, getErrorMessage } from '../services/api'
+import type { Subject, SubjectInput } from '../types'
 
 export const useSubjectStore = defineStore('subjects', () => {
-  // Mock data. Phase 5 replaces this with API calls.
-  const subjects = ref<Subject[]>([
-    { id: 's1', name: 'Programming', color: '#6366f1', description: 'Web development and coding labs' },
-    { id: 's2', name: 'Database', color: '#0ea5e9', description: 'SQL, ER diagrams and MongoDB' },
-    { id: 's3', name: 'English', color: '#f59e0b', description: 'Essays, reports and presentations' },
-    { id: 's4', name: 'Networking', color: '#10b981', description: 'Protocols, subnetting and topology' },
-    { id: 's5', name: 'Mathematics', color: '#ec4899', description: 'Calculus and linear algebra' },
-  ])
+  const subjects = ref<Subject[]>([])
+  const loaded = ref(false)
+  const loading = ref(false)
+  const error = ref('')
 
-  function colorOf(name: string): string {
-    return subjects.value.find((s) => s.name === name)?.color ?? '#94a3b8'
+  async function load() {
+    loading.value = true
+    error.value = ''
+    try {
+      const { data } = await api.get('/subjects')
+      subjects.value = data.data.subjects
+      loaded.value = true
+    } catch (e) {
+      error.value = getErrorMessage(e)
+    } finally {
+      loading.value = false
+    }
   }
 
-  function addSubject(input: SubjectInput) {
-    subjects.value.push({ ...input, id: 's' + Date.now() })
+  const colorOf = (id: string) => subjects.value.find((s) => s.id === id)?.color ?? '#94a3b8'
+  const nameOf = (id: string) => subjects.value.find((s) => s.id === id)?.name ?? 'Unknown subject'
+
+  async function addSubject(input: SubjectInput) {
+    try {
+      const { data } = await api.post('/subjects', input)
+      subjects.value.push(data.data.subject)
+    } catch (e) {
+      throw new Error(getErrorMessage(e))
+    }
   }
 
-  function updateSubject(id: string, input: SubjectInput) {
-    const s = subjects.value.find((x) => x.id === id)
-    if (s) Object.assign(s, input)
+  async function updateSubject(id: string, input: SubjectInput) {
+    try {
+      const { data } = await api.put(`/subjects/${id}`, input)
+      const i = subjects.value.findIndex((s) => s.id === id)
+      if (i >= 0) subjects.value[i] = data.data.subject
+    } catch (e) {
+      throw new Error(getErrorMessage(e))
+    }
   }
 
-  function deleteSubject(id: string) {
-    subjects.value = subjects.value.filter((s) => s.id !== id)
+  // The server deletes the subject's tasks too
+  async function deleteSubject(id: string) {
+    try {
+      await api.delete(`/subjects/${id}`)
+      subjects.value = subjects.value.filter((s) => s.id !== id)
+    } catch (e) {
+      throw new Error(getErrorMessage(e))
+    }
   }
 
-  return { subjects, colorOf, addSubject, updateSubject, deleteSubject }
+  function reset() {
+    subjects.value = []
+    loaded.value = false
+    loading.value = false
+    error.value = ''
+  }
+
+  return { subjects, loaded, loading, error, load, colorOf, nameOf, addSubject, updateSubject, deleteSubject, reset }
 })

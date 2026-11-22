@@ -84,3 +84,7 @@ body {
 
 /* Smooth scrolling for landing page section links */
 html { scroll-behavior: smooth; }
+
+/* Loading placeholders */
+.skeleton { @apply animate-pulse rounded-2xl bg-slate-200/70; }
+.dark .skeleton { background-color: #1b2340; }

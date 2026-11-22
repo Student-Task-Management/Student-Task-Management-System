@@ -36,7 +36,7 @@ const filtered = computed(() => {
     .filter((t) => !q || t.title.toLowerCase().includes(q))
     .filter((t) => statusFilter.value === 'All' || t.status === statusFilter.value)
     .filter((t) => priorityFilter.value === 'All' || t.priority === priorityFilter.value)
-    .filter((t) => subjectFilter.value === 'All' || t.subject === subjectFilter.value)
+    .filter((t) => subjectFilter.value === 'All' || t.subjectId === subjectFilter.value)
     .sort((a, b) =>
       sortBy.value === 'dueDate'
         ? a.dueDate.localeCompare(b.dueDate)
@@ -79,7 +79,7 @@ const deleteMessage = computed(() =>
 function confirmDelete() {
   if (!deleting.value) return
   store.deleteTask(deleting.value.id)
-  ui.toast('Task deleted')
+  
   deleting.value = null
 }
 </script>
@@ -135,7 +135,7 @@ function confirmDelete() {
           <label for="f-subject" class="sr-only">Filter by subject</label>
           <select id="f-subject" v-model="subjectFilter" class="field">
             <option value="All">All subjects</option>
-            <option v-for="s in subjectStore.subjects" :key="s.id" :value="s.name">{{ s.name }}</option>
+            <option v-for="s in subjectStore.subjects" :key="s.id" :value="s.id">{{ s.name }}</option>
           </select>
         </div>
         <div>
@@ -191,8 +191,8 @@ function confirmDelete() {
           </button>
           <p class="truncate text-xs text-muted">{{ t.description }}</p>
           <p class="mt-1 flex items-center gap-1.5 text-xs text-muted">
-            <span class="h-2 w-2 rounded-full" :style="{ backgroundColor: subjectStore.colorOf(t.subject) }"></span>
-            {{ t.subject }}
+            <span class="h-2 w-2 rounded-full" :style="{ backgroundColor: subjectStore.colorOf(t.subjectId) }"></span>
+            {{ subjectStore.nameOf(t.subjectId) }}
           </p>
         </div>
 

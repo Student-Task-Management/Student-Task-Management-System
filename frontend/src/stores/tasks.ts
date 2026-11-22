@@ -1,51 +1,33 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
-import type { Priority, Status, Task, TaskInput } from '../types'
+import { api, getErrorMessage } from '../services/api'
+import type { Status, Task, TaskInput } from '../types'
 import { dateKeyFromOffset } from '../utils/date'
-
-function mock(
-  id: string,
-  title: string,
-  subject: string,
-  priority: Priority,
-  status: Status,
-  dueOffset: number,
-  updatedHoursAgo: number,
-): Task {
-  const updated = new Date(Date.now() - updatedHoursAgo * 3600000).toISOString()
-  return {
-    id,
-    title,
-    description: `Work on: ${title}`,
-    subject,
-    priority,
-    status,
-    dueDate: dateKeyFromOffset(dueOffset),
-    createdAt: new Date(Date.now() - (updatedHoursAgo + 48) * 3600000).toISOString(),
-    updatedAt: updated,
-  }
-}
+import { useUiStore } from './ui'
 
 export const useTaskStore = defineStore('tasks', () => {
-  // Mock data. Phase 5 replaces this with API calls.
-  const tasks = ref<Task[]>([
-    mock('1', 'Database ER diagram', 'Database', 'High', 'In Progress', 0, 2),
-    mock('2', 'Read Chapter 5 - Networking', 'Networking', 'Medium', 'Pending', 0, 5),
-    mock('3', 'Vue component quiz prep', 'Programming', 'Low', 'Completed', 0, 1),
-    mock('4', 'Essay: Technology in Education', 'English', 'Medium', 'Pending', 2, 20),
-    mock('5', 'SQL joins worksheet', 'Database', 'High', 'Pending', 1, 8),
-    mock('6', 'Calculus problem set 4', 'Mathematics', 'High', 'In Progress', 3, 30),
-    mock('7', 'Subnetting practice', 'Networking', 'Medium', 'Pending', 5, 40),
-    mock('8', 'Build REST API lab', 'Programming', 'High', 'In Progress', 6, 12),
-    mock('9', 'Group presentation slides', 'English', 'Medium', 'Pending', -1, 26),
-    mock('10', 'Linear algebra notes', 'Mathematics', 'Low', 'Completed', -1, 3),
-    mock('11', 'Normalization exercise', 'Database', 'Medium', 'Completed', -2, 50),
-    mock('12', 'Git basics assignment', 'Programming', 'Low', 'Completed', -3, 70),
-    mock('13', 'Vocabulary test', 'English', 'Low', 'Completed', -4, 90),
-    mock('14', 'Network topology report', 'Networking', 'High', 'Completed', -5, 110),
-    mock('15', 'Lab report', 'Programming', 'Medium', 'Completed', -6, 130),
-  ])
+  const ui = useUiStore()
 
+  const tasks = ref<Task[]>([])
+  const loaded = ref(false)
+  const loading = ref(false)
+  const error = ref('')
+
+  async function load() {
+    loading.value = true
+    error.value = ''
+    try {
+      const { data } = await api.get('/tasks')
+      tasks.value = data.data.tasks
+      loaded.value = true
+    } catch (e) {
+      error.value = getErrorMessage(e)
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // ---------- Numbers for the dashboard, calculated from the real tasks ----------
   const total = computed(() => tasks.value.length)
   const pending = computed(() => tasks.value.filter((t) => t.status === 'Pending').length)
   const inProgress = computed(() => tasks.value.filter((t) => t.status === 'In Progress').length)
@@ -85,48 +67,83 @@ export const useTaskStore = defineStore('tasks', () => {
     }),
   )
 
-  function addTask(input: TaskInput) {
-    const now = new Date().toISOString()
-    tasks.value.unshift({ ...input, id: String(Date.now()), createdAt: now, updatedAt: now })
+  // ---------- Changes, saved in the database through the API ----------
+  function replace(task: Task) {
+    const i = tasks.value.findIndex((t) => t.id === task.id)
+    if (i >= 0) tasks.value[i] = task
   }
 
-  function updateTask(id: string, input: TaskInput) {
-    const task = tasks.value.find((t) => t.id === id)
-    if (task) Object.assign(task, input, { updatedAt: new Date().toISOString() })
-  }
-
-  function deleteTask(id: string) {
-    tasks.value = tasks.value.filter((t) => t.id !== id)
-  }
-
-  function setStatus(id: string, status: Status) {
-    const task = tasks.value.find((t) => t.id === id)
-    if (task) {
-      task.status = status
-      task.updatedAt = new Date().toISOString()
+  // addTask and updateTask throw on failure, so the form can show the error
+  async function addTask(input: TaskInput) {
+    try {
+      const { data } = await api.post('/tasks', input)
+      tasks.value.unshift(data.data.task)
+    } catch (e) {
+      throw new Error(getErrorMessage(e))
     }
   }
 
-  function completeTask(id: string) {
-    setStatus(id, 'Completed')
+  async function updateTask(id: string, input: TaskInput) {
+    try {
+      const { data } = await api.put(`/tasks/${id}`, input)
+      replace(data.data.task)
+    } catch (e) {
+      throw new Error(getErrorMessage(e))
+    }
   }
 
-  // When a subject is renamed, its tasks follow the new name
-  function renameSubject(oldName: string, newName: string) {
-    tasks.value.forEach((t) => {
-      if (t.subject === oldName) t.subject = newName
-    })
+  // deleteTask and setStatus show their own error message and return true or false
+  async function deleteTask(id: string): Promise<boolean> {
+    try {
+      await api.delete(`/tasks/${id}`)
+      tasks.value = tasks.value.filter((t) => t.id !== id)
+      ui.toast('Task deleted')
+      return true
+    } catch (e) {
+      ui.toast(getErrorMessage(e), 'error')
+      return false
+    }
   }
 
-  // When a subject is deleted, its tasks are deleted too
-  function deleteBySubject(name: string) {
-    tasks.value = tasks.value.filter((t) => t.subject !== name)
+  async function setStatus(id: string, status: Status): Promise<boolean> {
+    const task = tasks.value.find((t) => t.id === id)
+    if (!task) return false
+    if (task.status === status) return true
+    try {
+      const { data } = await api.put(`/tasks/${id}`, {
+        title: task.title,
+        description: task.description,
+        subjectId: task.subjectId,
+        priority: task.priority,
+        status,
+        dueDate: task.dueDate,
+      })
+      replace(data.data.task)
+      return true
+    } catch (e) {
+      ui.toast(getErrorMessage(e), 'error')
+      return false
+    }
+  }
+
+  const completeTask = (id: string) => setStatus(id, 'Completed')
+
+  // The server already deleted these tasks together with their subject
+  function removeBySubject(subjectId: string) {
+    tasks.value = tasks.value.filter((t) => t.subjectId !== subjectId)
+  }
+
+  function reset() {
+    tasks.value = []
+    loaded.value = false
+    loading.value = false
+    error.value = ''
   }
 
   return {
-    tasks, total, pending, inProgress, completed, completionRate,
+    tasks, loaded, loading, error, load,
+    total, pending, inProgress, completed, completionRate,
     todayTasks, upcoming, recentActivity, weekly,
-    addTask, updateTask, deleteTask, setStatus, completeTask,
-    renameSubject, deleteBySubject,
+    addTask, updateTask, deleteTask, setStatus, completeTask, removeBySubject, reset,
   }
 })

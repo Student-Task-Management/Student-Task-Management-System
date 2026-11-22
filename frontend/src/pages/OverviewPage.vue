@@ -7,11 +7,13 @@ import WeeklyChart from '../components/WeeklyChart.vue'
 import { useAuthStore } from '../stores/auth'
 import { useTaskStore } from '../stores/tasks'
 import { useUiStore } from '../stores/ui'
+import { useSubjectStore } from '../stores/subjects'
 import { daysUntil, dueLabel, timeAgo } from '../utils/date'
 
 const auth = useAuthStore()
 const store = useTaskStore()
 const ui = useUiStore()
+const subjects = useSubjectStore()
 
 const hour = new Date().getHours()
 const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening'
@@ -56,7 +58,7 @@ const firstName = auth.user.name.split(' ')[0]
           <li v-for="t in store.upcoming" :key="t.id" class="flex items-center justify-between gap-3 py-3">
             <div class="min-w-0">
               <p class="truncate text-sm font-medium">{{ t.title }}</p>
-              <p class="text-xs text-muted">{{ t.subject }}</p>
+              <p class="text-xs text-muted">{{ subjects.nameOf(t.subjectId) }}</p>
             </div>
             <span
               :class="[
@@ -95,7 +97,7 @@ const firstName = auth.user.name.split(' ')[0]
 
             <div class="min-w-0 flex-1">
               <p :class="['truncate text-sm font-medium', t.status === 'Completed' ? 'text-muted line-through' : '']">{{ t.title }}</p>
-              <p class="text-xs text-muted">{{ t.subject }}</p>
+              <p class="text-xs text-muted">{{ subjects.nameOf(t.subjectId) }}</p>
             </div>
 
             <div class="hidden items-center gap-2 sm:flex">

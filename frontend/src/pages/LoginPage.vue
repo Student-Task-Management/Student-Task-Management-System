@@ -13,7 +13,7 @@ const route = useRoute()
 const form = reactive({ email: '', password: '', remember: false })
 const errors = reactive<Record<string, string>>({})
 const loading = ref(false)
-const formError = ref('')
+const formError = ref(route.query.expired ? 'Your session expired. Please log in again.' : '')
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 function validate(): boolean {

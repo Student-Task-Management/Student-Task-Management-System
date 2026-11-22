@@ -26,8 +26,8 @@ async function saveProfile() {
   try {
     await auth.updateProfile(profile.name.trim(), profile.email.trim())
     ui.toast('Profile updated')
-  } catch {
-    ui.toast('Could not update your profile', 'error')
+  } catch (e) {
+    ui.toast(e instanceof Error ? e.message : 'Could not update your profile', 'error')
   } finally {
     savingProfile.value = false
   }
@@ -54,8 +54,8 @@ async function savePassword() {
     await auth.changePassword(pw.current, pw.next)
     pw.current = pw.next = pw.confirm = ''
     ui.toast('Password changed')
-  } catch {
-    ui.toast('Could not change your password', 'error')
+  } catch (e) {
+    ui.toast(e instanceof Error ? e.message : 'Could not change your password', 'error')
   } finally {
     savingPw.value = false
   }

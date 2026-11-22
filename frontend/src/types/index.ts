@@ -5,16 +5,17 @@ export interface Task {
   id: string
   title: string
   description: string
-  subject: string
+  subjectId: string
   priority: Priority
   status: Status
   dueDate: string // format: YYYY-MM-DD
+  completedAt: string | null
   createdAt: string
   updatedAt: string
 }
 
 // What the form sends when creating or editing a task
-export type TaskInput = Omit<Task, 'id' | 'createdAt' | 'updatedAt'>
+export type TaskInput = Omit<Task, 'id' | 'completedAt' | 'createdAt' | 'updatedAt'>
 
 export interface Subject {
   id: string
@@ -22,3 +23,5 @@ export interface Subject {
   color: string
   description: string
 }
+
+export type SubjectInput = Omit<Subject, 'id'>

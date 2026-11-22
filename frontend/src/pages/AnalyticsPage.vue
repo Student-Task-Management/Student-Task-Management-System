@@ -15,7 +15,7 @@ const completedTasks = computed(() => store.tasks.filter((t) => t.status === 'Co
 
 function completedWithin(days: number): number {
   const since = Date.now() - days * DAY
-  return completedTasks.value.filter((t) => new Date(t.updatedAt).getTime() >= since).length
+  return completedTasks.value.filter((t) => new Date(t.completedAt ?? t.updatedAt).getTime() >= since).length
 }
 
 const completedWeek = computed(() => completedWithin(7))
@@ -25,7 +25,7 @@ const completedMonth = computed(() => completedWithin(30))
 const avgDays = computed(() => {
   if (completedTasks.value.length === 0) return '-'
   const total = completedTasks.value.reduce(
-    (sum, t) => sum + (new Date(t.updatedAt).getTime() - new Date(t.createdAt).getTime()) / DAY,
+    (sum, t) => sum + (new Date(t.completedAt ?? t.updatedAt).getTime() - new Date(t.createdAt).getTime()) / DAY,
     0,
   )
   return (total / completedTasks.value.length).toFixed(1) + ' days'
@@ -41,7 +41,7 @@ const daily = computed(() =>
     return {
       day: d.getDate(),
       label: d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
-      count: completedTasks.value.filter((t) => toDateKey(new Date(t.updatedAt)) === key).length,
+      count: completedTasks.value.filter((t) => toDateKey(new Date(t.completedAt ?? t.updatedAt)) === key).length,
     }
   }),
 )
@@ -51,7 +51,7 @@ const barHeight = (v: number) => (v === 0 ? '0%' : `${Math.max((v / dailyMax.val
 // ---------- Tasks by subject ----------
 const subjectStats = computed(() =>
   subjectStore.subjects
-    .map((s) => ({ name: s.name, color: s.color, count: store.tasks.filter((t) => t.subject === s.name).length }))
+    .map((s) => ({ name: s.name, color: s.color, count: store.tasks.filter((t) => t.subjectId === s.id).length }))
     .filter((s) => s.count > 0),
 )
 const subjectTotal = computed(() => subjectStats.value.reduce((sum, s) => sum + s.count, 0))

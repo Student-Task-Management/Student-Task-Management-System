@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, reactive, ref } from 'vue'
-import { Plus, Pencil, Trash2, BookOpen, X, Check } from '@lucide/vue'
+import { Plus, Pencil, Trash2, BookOpen, X, Check, LoaderCircle, TriangleAlert } from '@lucide/vue'
 import ConfirmDialog from '../components/ConfirmDialog.vue'
 import { useSubjectStore } from '../stores/subjects'
 import { useTaskStore } from '../stores/tasks'
@@ -16,7 +16,7 @@ const palette = ['#6366f1', '#0ea5e9', '#10b981', '#f59e0b', '#ef4444', '#ec4899
 // One card per subject, with live numbers from the tasks
 const cards = computed(() =>
   subjectStore.subjects.map((s) => {
-    const list = taskStore.tasks.filter((t) => t.subject === s.name)
+    const list = taskStore.tasks.filter((t) => t.subjectId === s.id)
     const done = list.filter((t) => t.status === 'Completed').length
     return {
       subject: s,
@@ -32,10 +32,13 @@ const modalOpen = ref(false)
 const editing = ref<Subject | null>(null)
 const form = reactive({ name: '', color: palette[0], description: '' })
 const errors = reactive<Record<string, string>>({})
+const formError = ref('')
+const saving = ref(false)
 const nameInput = ref<HTMLInputElement | null>(null)
 
 async function openModal(subject?: Subject) {
   Object.keys(errors).forEach((k) => delete errors[k])
+  formError.value = ''
   editing.value = subject ?? null
   form.name = subject?.name ?? ''
   form.color = subject?.color ?? palette[subjectStore.subjects.length % palette.length]
@@ -58,19 +61,25 @@ function validate(): boolean {
   return Object.keys(errors).length === 0
 }
 
-function save() {
+async function save() {
   if (!validate()) return
+  saving.value = true
+  formError.value = ''
   const data = { name: form.name.trim(), color: form.color, description: form.description.trim() }
-  if (editing.value) {
-    const oldName = editing.value.name
-    subjectStore.updateSubject(editing.value.id, data)
-    if (oldName !== data.name) taskStore.renameSubject(oldName, data.name)
-    ui.toast('Subject updated')
-  } else {
-    subjectStore.addSubject(data)
-    ui.toast('Subject added')
+  try {
+    if (editing.value) {
+      await subjectStore.updateSubject(editing.value.id, data)
+      ui.toast('Subject updated')
+    } else {
+      await subjectStore.addSubject(data)
+      ui.toast('Subject added')
+    }
+    modalOpen.value = false
+  } catch (e) {
+    formError.value = e instanceof Error ? e.message : 'Could not save the subject. Please try again.'
+  } finally {
+    saving.value = false
   }
-  modalOpen.value = false
 }
 
 // ---------- Delete ----------
@@ -78,18 +87,23 @@ const deleting = ref<Subject | null>(null)
 
 const deleteMessage = computed(() => {
   if (!deleting.value) return ''
-  const count = taskStore.tasks.filter((t) => t.subject === deleting.value!.name).length
+  const count = taskStore.tasks.filter((t) => t.subjectId === deleting.value!.id).length
   return count > 0
     ? `"${deleting.value.name}" and its ${count} task${count === 1 ? '' : 's'} will be permanently deleted. This cannot be undone.`
     : `"${deleting.value.name}" will be permanently deleted. This cannot be undone.`
 })
 
-function confirmDelete() {
-  if (!deleting.value) return
-  taskStore.deleteBySubject(deleting.value.name)
-  subjectStore.deleteSubject(deleting.value.id)
-  ui.toast('Subject deleted')
+async function confirmDelete() {
+  const subject = deleting.value
+  if (!subject) return
   deleting.value = null
+  try {
+    await subjectStore.deleteSubject(subject.id)
+    taskStore.removeBySubject(subject.id)
+    ui.toast('Subject deleted')
+  } catch (e) {
+    ui.toast(e instanceof Error ? e.message : 'Could not delete the subject', 'error')
+  }
 }
 </script>
 
@@ -166,6 +180,10 @@ function confirmDelete() {
           </div>
 
           <form class="space-y-5 px-6 py-5" novalidate @submit.prevent="save">
+            <div v-if="formError" class="flex items-start gap-2 rounded-xl bg-rose-50 p-3 text-sm text-rose-700" role="alert">
+              <TriangleAlert :size="18" class="mt-0.5 shrink-0" /> {{ formError }}
+            </div>
+
             <div>
               <label for="subject-name" class="field-label">Name</label>
               <input id="subject-name" ref="nameInput" v-model="form.name" type="text" class="field" placeholder="e.g. Physics" />
@@ -198,7 +216,10 @@ function confirmDelete() {
 
             <div class="flex justify-end gap-2 pt-1">
               <button type="button" class="btn-ghost border border-slate-200 bg-white" @click="modalOpen = false">Cancel</button>
-              <button type="submit" class="btn-primary">{{ editing ? 'Save changes' : 'Add subject' }}</button>
+              <button type="submit" class="btn-primary disabled:opacity-70" :disabled="saving">
+                <LoaderCircle v-if="saving" :size="16" class="animate-spin" />
+                {{ saving ? 'Saving...' : editing ? 'Save changes' : 'Add subject' }}
+              </button>
             </div>
           </form>
         </div>

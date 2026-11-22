@@ -33,6 +33,8 @@ async function login(req, res) {
     // Same message for "no such email" and "wrong password" so attackers learn nothing
     if (!user || !valid)
         throw new ApiError_1.ApiError(401, 'Invalid email or password');
+    if (user.disabled)
+        throw new ApiError_1.ApiError(403, 'This account has been disabled. Please contact an administrator.');
     res.json({ success: true, data: { user, token: (0, jwt_1.signToken)(user.id, remember === true) } });
 }
 async function me(req, res) {

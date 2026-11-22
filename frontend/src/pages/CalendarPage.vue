@@ -180,8 +180,8 @@ function selectDay(day: { key: string; inMonth: boolean }) {
           <div class="min-w-0 flex-1">
             <p :class="['text-sm font-medium', t.status === 'Completed' ? 'text-muted line-through' : '']">{{ t.title }}</p>
             <p class="mt-0.5 flex items-center gap-1.5 text-xs text-muted">
-              <span class="h-2 w-2 rounded-full" :style="{ backgroundColor: subjects.colorOf(t.subject) }"></span>
-              {{ t.subject }}
+              <span class="h-2 w-2 rounded-full" :style="{ backgroundColor: subjects.colorOf(t.subjectId) }"></span>
+              {{ subjects.nameOf(t.subjectId) }}
             </p>
             <div class="mt-2 flex flex-wrap gap-2">
               <PriorityBadge :priority="t.priority" />

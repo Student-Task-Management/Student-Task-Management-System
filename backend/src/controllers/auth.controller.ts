@@ -35,6 +35,7 @@ export async function login(req: Request, res: Response) {
 
   // Same message for "no such email" and "wrong password" so attackers learn nothing
   if (!user || !valid) throw new ApiError(401, 'Invalid email or password')
+  if (user.disabled) throw new ApiError(403, 'This account has been disabled. Please contact an administrator.')
 
   res.json({ success: true, data: { user, token: signToken(user.id, remember === true) } })
 }

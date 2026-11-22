@@ -19,8 +19,8 @@ function onDrag(e: DragEvent) {
   e.dataTransfer?.setData('text/plain', props.task.id)
 }
 
-function changeStatus(e: Event) {
-  tasks.setStatus(props.task.id, (e.target as HTMLSelectElement).value as Status)
+async function changeStatus(e: Event) {
+  const select = e.target as HTMLSelectElement; if (!(await tasks.setStatus(props.task.id, select.value as Status))) select.value = props.task.status
 }
 </script>
 
@@ -40,8 +40,8 @@ function changeStatus(e: Event) {
     <p class="mt-1 line-clamp-2 text-xs text-muted">{{ task.description }}</p>
 
     <p class="mt-3 flex items-center gap-1.5 text-xs text-muted">
-      <span class="h-2 w-2 rounded-full" :style="{ backgroundColor: subjects.colorOf(task.subject) }"></span>
-      {{ task.subject }}
+      <span class="h-2 w-2 rounded-full" :style="{ backgroundColor: subjects.colorOf(task.subjectId) }"></span>
+      {{ subjects.nameOf(task.subjectId) }}
     </p>
 
     <div class="mt-3 flex items-center justify-between">
