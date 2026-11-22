@@ -1,28 +1,20 @@
 import type { Request, Response } from 'express'
 import { compare, hash } from 'bcryptjs'
 import { currentUserId } from '../middleware/auth'
-import { Subject } from '../models/Subject'
 import { User } from '../models/User'
+import { seedUserSubjects } from '../services/subjectCatalog'
 import { ApiError } from '../utils/ApiError'
 import { signToken } from '../utils/jwt'
-
-// Every new account starts with these subjects (delete the list to turn this off)
-const DEFAULT_SUBJECTS = [
-  { name: 'Programming', color: '#6366f1', description: 'Web development and coding labs' },
-  { name: 'Database', color: '#0ea5e9', description: 'SQL, ER diagrams and MongoDB' },
-  { name: 'English', color: '#f59e0b', description: 'Essays, reports and presentations' },
-  { name: 'Networking', color: '#10b981', description: 'Protocols, subnetting and topology' },
-  { name: 'Mathematics', color: '#ec4899', description: 'Calculus and linear algebra' },
-]
 
 export async function register(req: Request, res: Response) {
   const { name, email, password } = req.body
 
   if (await User.exists({ email })) throw new ApiError(409, 'An account with this email already exists')
 
-  // Never store the plain password: bcrypt turns it into a one-way hash
+  // Never store the plain password: bcrypt turns it into a one-way hash.
+  // The role is not read from the request: sign-ups are always students.
   const user = await User.create({ name, email, password: await hash(password, 12) })
-  await Subject.insertMany(DEFAULT_SUBJECTS.map((s) => ({ ...s, userId: user._id })))
+  await seedUserSubjects(user._id)
 
   res.status(201).json({ success: true, data: { user, token: signToken(user.id) } })
 }

@@ -6,12 +6,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const app_1 = __importDefault(require("./app"));
 const db_1 = require("./config/db");
 const env_1 = require("./config/env");
+const subjectCatalog_1 = require("./services/subjectCatalog");
 async function start() {
     try {
         await (0, db_1.connectDb)();
+        await (0, subjectCatalog_1.ensureCatalog)();
     }
     catch (err) {
-        console.error('Could not connect to MongoDB:', err instanceof Error ? err.message : err);
+        console.error('Could not start:', err instanceof Error ? err.message : err);
         process.exit(1);
     }
     const server = app_1.default.listen(env_1.env.PORT, () => {

@@ -4,6 +4,7 @@ export const SESSION_KEY = 'studyflow_session'
 
 export interface SessionUser {
   id: string
+  role?: 'user' | 'admin'
   name: string
   email: string
 }

@@ -6,7 +6,7 @@ defineProps<{
   value: number | string
   hint: string
   icon: Component
-  tone: 'indigo' | 'amber' | 'sky' | 'emerald'
+  tone: 'indigo' | 'amber' | 'sky' | 'emerald' | 'rose'
 }>()
 
 const tones = {
@@ -14,6 +14,7 @@ const tones = {
   amber: 'bg-amber-50 text-amber-600',
   sky: 'bg-sky-50 text-sky-600',
   emerald: 'bg-emerald-50 text-emerald-600',
+  rose: 'bg-rose-50 text-rose-600',
 }
 </script>
 

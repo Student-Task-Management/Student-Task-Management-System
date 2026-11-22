@@ -32,7 +32,8 @@ async function submit() {
   try {
     await auth.login(form.email.trim(), form.password, form.remember)
     const redirect = route.query.redirect
-    router.push(typeof redirect === 'string' && redirect.startsWith('/app') ? redirect : '/app/overview')
+    if (auth.isAdmin) router.push('/admin/overview')
+    else router.push(typeof redirect === 'string' && redirect.startsWith('/app') ? redirect : '/app/overview')
   } catch (e) {
     formError.value = e instanceof Error ? e.message : 'Something went wrong. Please try again.'
   } finally {

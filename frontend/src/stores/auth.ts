@@ -1,8 +1,8 @@
 import { defineStore } from 'pinia'
-import { useSubjectStore } from './subjects'
-import { useTaskStore } from './tasks'
 import { computed, ref } from 'vue'
 import { api, getErrorMessage, readSession, SESSION_KEY, type Session, type SessionUser } from '../services/api'
+import { useSubjectStore } from './subjects'
+import { useTaskStore } from './tasks'
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
@@ -10,6 +10,9 @@ export const useAuthStore = defineStore('auth', () => {
   const saved = readSession()
   const user = ref<SessionUser>(saved?.user ?? { id: '', name: 'Guest', email: '' })
   const isLoggedIn = ref(saved !== null)
+
+  // The role comes from the server and decides which area the user may open
+  const isAdmin = computed(() => user.value.role === 'admin')
 
   const initials = computed(() =>
     user.value.name.split(' ').map((p) => p.charAt(0)).slice(0, 2).join('').toUpperCase(),
@@ -57,7 +60,7 @@ export const useAuthStore = defineStore('auth', () => {
     await wait(700)
   }
 
-  // Ask the server to confirm the saved login and refresh the name and email
+  // Ask the server to confirm the saved login and refresh the name, email and role
   async function refresh() {
     try {
       const { data } = await api.get('/auth/me')
@@ -94,7 +97,7 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   return {
-    user, isLoggedIn, initials,
+    user, isLoggedIn, isAdmin, initials,
     login, register, requestPasswordReset, refresh, updateProfile, changePassword, logout,
   }
 })

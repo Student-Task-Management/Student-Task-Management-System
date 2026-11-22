@@ -1,12 +1,14 @@
 import app from './app'
 import { connectDb, disconnectDb } from './config/db'
 import { env } from './config/env'
+import { ensureCatalog } from './services/subjectCatalog'
 
 async function start() {
   try {
     await connectDb()
+    await ensureCatalog()
   } catch (err) {
-    console.error('Could not connect to MongoDB:', err instanceof Error ? err.message : err)
+    console.error('Could not start:', err instanceof Error ? err.message : err)
     process.exit(1)
   }
 

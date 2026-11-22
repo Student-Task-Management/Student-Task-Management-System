@@ -21,18 +21,35 @@ const router = createRouter({
         { path: 'settings', name: 'settings', component: () => import('../pages/SettingsPage.vue'), meta: { title: 'Settings' } },
       ],
     },
+    {
+      path: '/admin',
+      component: () => import('../layouts/AdminLayout.vue'),
+      redirect: '/admin/overview',
+      children: [
+        { path: 'overview', name: 'admin-overview', component: () => import('../pages/AdminOverviewPage.vue') },
+        { path: 'users', name: 'admin-users', component: () => import('../pages/AdminUsersPage.vue') },
+        { path: 'users/:id', name: 'admin-user-detail', component: () => import('../pages/AdminUserDetailPage.vue') },
+        { path: 'tasks', name: 'admin-tasks', component: () => import('../pages/AdminTasksPage.vue') },
+        { path: 'subjects', name: 'admin-subjects', component: () => import('../pages/AdminSubjectsPage.vue') },
+      ],
+    },
   ],
   scrollBehavior: (to) => (to.hash ? { el: to.hash, top: 80 } : { top: 0 }),
 })
 
-// Route guard: dashboard pages need a login, login/register skip if already logged in
+// Route guard: who may open which area
 router.beforeEach((to) => {
   const auth = useAuthStore()
-  if (to.path.startsWith('/app') && !auth.isLoggedIn) {
+  const inStudentArea = to.path.startsWith('/app')
+  const inAdminArea = to.path.startsWith('/admin')
+
+  if ((inStudentArea || inAdminArea) && !auth.isLoggedIn) {
     return { path: '/login', query: { redirect: to.fullPath } }
   }
+  if (inAdminArea && !auth.isAdmin) return '/app/overview'
+  if (inStudentArea && auth.isAdmin) return '/admin/overview'
   if ((to.path === '/login' || to.path === '/register') && auth.isLoggedIn) {
-    return '/app/overview'
+    return auth.isAdmin ? '/admin/overview' : '/app/overview'
   }
 })
 

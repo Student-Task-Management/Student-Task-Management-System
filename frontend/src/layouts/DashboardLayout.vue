@@ -4,11 +4,13 @@ import AppSidebar from '../components/AppSidebar.vue'
 import AppTopbar from '../components/AppTopbar.vue'
 import TaskFormPanel from '../components/TaskFormPanel.vue'
 import ToastHost from '../components/ToastHost.vue'
+import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { useSubjectStore } from '../stores/subjects'
 import { useTaskStore } from '../stores/tasks'
 
 const auth = useAuthStore()
+const router = useRouter()
 const tasks = useTaskStore()
 const subjects = useSubjectStore()
 
@@ -25,7 +27,7 @@ function loadData() {
 }
 
 onMounted(() => {
-  void auth.refresh() // confirm the saved login with the server
+  void auth.refresh().then(() => { if (auth.isAdmin) router.replace('/admin/overview') })
   loadData()
 })
 </script>
