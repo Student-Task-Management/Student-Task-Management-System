@@ -1,3 +1,9 @@
-﻿node_modules
+node_modules
+dist
 .env
-uploads
+.env.*
+!.env.example
+*.log
+*.ps1
+Dockerfile
+.dockerignore

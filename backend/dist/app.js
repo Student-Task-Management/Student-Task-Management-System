@@ -11,6 +11,9 @@ const env_1 = require("./config/env");
 const errorHandler_1 = require("./middleware/errorHandler");
 const routes_1 = __importDefault(require("./routes"));
 const app = (0, express_1.default)();
+// Behind Nginx the real visitor address is in X-Forwarded-For.
+// Without this, the login rate limit would count all visitors as one.
+app.set('trust proxy', env_1.env.TRUST_PROXY);
 app.use((0, helmet_1.default)()); // safe HTTP headers
 app.use((0, cors_1.default)({ origin: env_1.env.CLIENT_URL, credentials: true })); // only our frontend may call the API
 app.use(express_1.default.json({ limit: '1mb' })); // read JSON request bodies

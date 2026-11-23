@@ -10,6 +10,8 @@ const schema = zod_1.z.object({
     CLIENT_URL: zod_1.z.string().default('http://localhost:5173'),
     MONGODB_URI: zod_1.z.string().min(1, 'MONGODB_URI is required'),
     JWT_SECRET: zod_1.z.string().min(32, 'JWT_SECRET must be at least 32 characters'),
+    // How many proxies (Nginx) sit in front of the API. 0 when running directly.
+    TRUST_PROXY: zod_1.z.coerce.number().int().min(0).default(0),
 });
 const parsed = schema.safeParse(process.env);
 if (!parsed.success) {
